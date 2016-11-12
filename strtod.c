@@ -105,7 +105,6 @@
  *  something other than "long long", #define Llong to be the name,
  *  and if "unsigned Llong" does not work as an unsigned version of
  *  Llong, #define #ULLong to be the corresponding unsigned type.
- * #define KR_headers for old-style C function headers.
  * #define Bad_float_h if your system lacks a float.h or if it does not
  *  define some or all of DBL_DIG, DBL_MAX_10_EXP, DBL_MAX_EXP,
  *  FLT_RADIX, FLT_ROUNDS, and DBL_MAX.
@@ -215,11 +214,7 @@ typedef unsigned Long ULong;
 #endif
 
 #ifdef MALLOC
-#   ifdef KR_headers
-extern char *MALLOC();
-#   else
 extern void *MALLOC(size_t);
-#   endif
 #else
 #   define MALLOC malloc
 #endif
@@ -293,11 +288,7 @@ extern "C" {
 #endif
 
 #ifndef CONST
-#   ifdef KR_headers
-#       define CONST /* blank */
-#   else
-#       define CONST const
-#   endif
+#	define CONST const
 #endif
 
 #if defined(IEEE_8087) + defined(IEEE_MC68k) + defined(VAX) + defined(IBM) != 1
@@ -471,11 +462,7 @@ extern int strtod_diglim;
 #ifdef RND_PRODQUOT
 #   define rounded_product(a,b) a = rnd_prod(a, b)
 #   define rounded_quotient(a,b) a = rnd_quot(a, b)
-#   ifdef KR_headers
-extern double rnd_prod(), rnd_quot();
-#   else
 extern double rnd_prod(double, double), rnd_quot(double, double);
-#   endif
 #else
 #   define rounded_product(a,b) a *= b
 #   define rounded_quotient(a,b) a /= b
@@ -495,11 +482,7 @@ struct BCinfo {
 
 
 
-#ifdef KR_headers
-#   define FFFFFFFF ((((unsigned long)0xffff)<<16)|(unsigned long)0xffff)
-#else
-#   define FFFFFFFF 0xffffffffUL
-#endif
+#define FFFFFFFF 0xffffffffUL
 
 #ifdef NO_LONG_LONG
 #   undef ULLong

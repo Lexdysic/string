@@ -67,14 +67,20 @@
 /*
  * #define IEEE_8087 for IEEE-arithmetic machines where the least
  *  significant byte has the lowest address.
+ *
  * #define IEEE_MC68k for IEEE-arithmetic machines where the most
  *  significant byte has the lowest address.
+ *
  * #define Long int on machines with 32-bit ints and 64-bit longs.
+ *
  * #define IBM for IBM mainframe-style floating-point arithmetic.
+ *
  * #define VAX for VAX-style floating-point arithmetic (D_floating).
+ *
  * #define No_leftright to omit left-right logic in fast floating-point
  *  computation of dtoa.  This will cause dtoa modes 4 and 5 to be
  *  treated the same as modes 2 and 3 for some inputs.
+ *
  * #define Honor_FLT_ROUNDS if FLT_ROUNDS can assume the values 2 or 3
  *  and strtod and dtoa should round accordingly.  Unless Trust_FLT_ROUNDS
  *  is also #defined, fegetround() will be queried for the rounding mode.
@@ -83,19 +89,25 @@
  *  affecting the value of FLT_ROUNDS), but that some (Linux) systems
  *  do not work correctly in this regard, so using fegetround() is more
  *  portable than using FLT_ROUNDS directly.
+ *
  * #define Check_FLT_ROUNDS if FLT_ROUNDS can assume the values 2 or 3
  *  and Honor_FLT_ROUNDS is not #defined.
+ *
  * #define RND_PRODQUOT to use rnd_prod and rnd_quot (assembly routines
  *  that use extended-precision instructions to compute rounded
  *  products and quotients) with IBM.
+ *
  * #define ROUND_BIASED for IEEE-format with biased rounding and arithmetic
  *  that rounds toward +Infinity.
+ *
  * #define ROUND_BIASED_without_Round_Up for IEEE-format with biased
  *  rounding when the underlying floating-point arithmetic uses
  *  unbiased rounding.  This prevent using ordinary floating-point
  *  arithmetic when the result could be computed with one rounding error.
+ *
  * #define Inaccurate_Divide for IEEE-format with correctly rounded
  *  products but inaccurate quotients, e.g., for Intel i860.
+ *
  * #define NO_LONG_LONG on machines that do not have a "long long"
  *  integer type (of >= 64 bits).  On such machines, you can
  *  #define Just_16 to store 16 bits per 32-bit Long when doing
@@ -105,9 +117,11 @@
  *  something other than "long long", #define Llong to be the name,
  *  and if "unsigned Llong" does not work as an unsigned version of
  *  Llong, #define #ULLong to be the corresponding unsigned type.
+ *
  * #define Bad_float_h if your system lacks a float.h or if it does not
  *  define some or all of DBL_DIG, DBL_MAX_10_EXP, DBL_MAX_EXP,
  *  FLT_RADIX, FLT_ROUNDS, and DBL_MAX.
+ *
  * #define MALLOC your_malloc, where your_malloc(n) acts like malloc(n)
  *  if memory is available and otherwise does something you deem
  *  appropriate.  If MALLOC is undefined, malloc will be invoked
@@ -117,6 +131,7 @@
  *  name of the alternate routine.  (FREE or free is only called in
  *  pathological cases, e.g., in a dtoa call after a dtoa return in
  *  mode 3 with thousands of digits requested.)
+ *
  * #define Omit_Private_Memory to omit logic (added Jan. 1998) for making
  *  memory allocations from a private pool of memory when possible.
  *  When used, the private pool is PRIVATE_MEM bytes long:  2304 bytes,
@@ -128,6 +143,7 @@
  *  all dtoa conversions in single-threaded executions with 8-byte
  *  pointers, PRIVATE_MEM >= 7400 appears to suffice; with 4-byte
  *  pointers, PRIVATE_MEM >= 7112 appears adequate.
+ *
  * #define NO_INFNAN_CHECK if you do not wish to have INFNAN_CHECK
  *  #defined automatically on IEEE systems.  On such systems,
  *  when INFNAN_CHECK is #defined, strtod checks
@@ -145,6 +161,7 @@
  *  white space ignored; but if this results in none of the 52
  *  fraction bits being on (an IEEE Infinity symbol), then NAN_WORD0
  *  and NAN_WORD1 are used instead.
+ *
  * #define MULTIPLE_THREADS if the system offers preemptively scheduled
  *  multiple threads.  In this case, you must provide (or suitably
  *  #define) two locks, acquired by ACQUIRE_DTOA_LOCK(n) and freed
@@ -154,13 +171,16 @@
  *  probability of wasting memory, but would otherwise be harmless.)
  *  You must also invoke freedtoa(s) to free the value s returned by
  *  dtoa.  You may do so whether or not MULTIPLE_THREADS is #defined.
+ *
  * #define NO_IEEE_Scale to disable new (Feb. 1997) logic in strtod that
  *  avoids underflows on inputs whose result does not underflow.
  *  If you #define NO_IEEE_Scale on a machine that uses IEEE-format
  *  floating-point numbers and flushes underflows to zero rather
  *  than implementing gradual underflow, then you must also #define
  *  Sudden_Underflow.
+ *
  * #define USE_LOCALE to use the current locale's decimal_point value.
+ *
  * #define SET_INEXACT if IEEE arithmetic is being used and extra
  *  computation should be done to set the inexact flag when the
  *  result is inexact and avoid setting inexact when the result
@@ -175,10 +195,13 @@
  *  also does extra computations to set the underflow and overflow
  *  flags when appropriate (i.e., when the result is tiny and
  *  inexact or when it is a numeric value rounded to +-infinity).
+ *
  * #define NO_ERRNO if strtod should not assign errno = ERANGE when
  *  the result overflows to +-Infinity or underflows to 0.
+ *
  * #define NO_HEX_FP to omit recognition of hexadecimal floating-point
- *  values by strtod.
+ *  values by strtod. 
+ *
  * #define NO_STRTOD_BIGCOMP (on IEEE-arithmetic systems only for now)
  *  to disable logic for "fast" testing of very long input strings
  *  to strtod.  This testing proceeds by initially truncating the
@@ -288,7 +311,7 @@ extern "C" {
 #endif
 
 #ifndef CONST
-#	define CONST const
+#   define CONST const
 #endif
 
 #if defined(IEEE_8087) + defined(IEEE_MC68k) + defined(VAX) + defined(IBM) != 1
@@ -509,6 +532,10 @@ struct BCinfo {
 #endif
 
 #define Kmax 7
+
+
+
+
 
 #ifdef __cplusplus
 extern "C" double strtod(const char *s00, char **se);
@@ -1102,6 +1129,11 @@ static Bigint * diff (Bigint *a, Bigint *b)
     c->wds = wa;
     return c;
     }
+
+
+
+
+
 
 
 static double ulp (U *x)
@@ -2433,7 +2465,7 @@ double strtod (const char *s00, char **se)
             if (*++s)
                 goto break2;
             /* no break */
-        case 0:
+        case '\0':
             goto ret0;
         case '\t':
         case '\n':
@@ -2475,6 +2507,7 @@ double strtod (const char *s00, char **se)
     bc.dp0 = bc.dp1 = s - s0;
     for(s1 = s; s1 > s0 && *--s1 == '0'; )
         ++nz1;
+
 #ifdef USE_LOCALE
     s1 = localeconv()->decimal_point;
     if (c == *s1) {
@@ -2494,6 +2527,7 @@ double strtod (const char *s00, char **se)
             }
         }
 #endif
+
     if (c == '.') {
         c = *++s;
         bc.dp1 = s - s0;
@@ -2511,6 +2545,7 @@ double strtod (const char *s00, char **se)
                 }
             goto dig_done;
             }
+
         for(; c >= '0' && c <= '9'; c = *++s) {
  have_dig:
             nz++;
@@ -2567,6 +2602,7 @@ double strtod (const char *s00, char **se)
         else
             s = s00;
         }
+
     if (!nd) {
         if (!nz && !nz0) {
 #ifdef INFNAN_CHECK
@@ -2604,6 +2640,8 @@ double strtod (const char *s00, char **se)
         goto ret;
         }
     bc.e0 = e1 = e -= nf;
+
+
 
     /* Now we have nd0 digits, starting at s0, followed by a
      * decimal point, followed by nd-nd0 digits.  The number we're
@@ -4244,6 +4282,14 @@ char * dtoa (double dd, int mode, int ndigits, int *decpt, int *sign, char **rve
     return s0;
     }
 
+
+int main () {
+    const char * str = "3.1415";
+    char * end = 0;
+    size_t len = strlen(str);
+    strtod(str, &end);
+    return 0;
+}
 
 
 

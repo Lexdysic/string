@@ -334,12 +334,14 @@ extern int strtod_diglim;
 #define Tiny1 1
 #define Quick_max 14
 #define Int_max 14
+
 #if !defined(NO_IEEE_Scale)
 #    define Avoid_Underflow
 #    if defined(Flush_Denorm)  /* debugging option */
 #        undef Sudden_Underflow
 #    endif
 #endif
+
 #if !defined(Flt_Rounds)
 #    if defined(FLT_ROUNDS)
 #        define Flt_Rounds FLT_ROUNDS
@@ -347,6 +349,7 @@ extern int strtod_diglim;
 #        define Flt_Rounds 1
 #    endif
 #endif
+
 #if defined(Honor_FLT_ROUNDS)
 #    undef Check_FLT_ROUNDS
 #    define Check_FLT_ROUNDS
@@ -407,12 +410,6 @@ struct BCinfo {
 
 #define Kmax 7
 
-
-
-
-
-
-
 #if defined(__cplusplus)
 extern "C" double strtod (const char *s00, char **se);
 extern "C" char *dtoa (double d, int mode, int ndigits, int *decpt, int *sign, char **rve);
@@ -428,6 +425,7 @@ typedef struct Bigint Bigint;
 
 static Bigint *freelist[Kmax+1];
 
+/*===========================================================================*/
 static Bigint * Balloc (int k) {
     int x;
     Bigint *rv;
@@ -463,6 +461,7 @@ static Bigint * Balloc (int k) {
     return rv;
 }
 
+/*===========================================================================*/
 static void Bfree (Bigint *v) {
     if (v) {
         if (v->k > Kmax) {
@@ -477,9 +476,11 @@ static void Bfree (Bigint *v) {
     }
 }
 
+/*===========================================================================*/
 #define Bcopy(x,y) memcpy((char *)&x->sign, (char *)&y->sign, y->wds * sizeof(Long) + 2 * sizeof(int))
 
 
+/*===========================================================================*/
 /* multiply by m and add a */
 static Bigint * multadd (Bigint *b, int m, int a) {
     int i, wds;
@@ -530,6 +531,7 @@ static Bigint * multadd (Bigint *b, int m, int a) {
     return b;
 }
 
+/*===========================================================================*/
 static Bigint * s2b (const char *s, int nd0, int nd, ULong y9, int dplen) {
     Bigint *b;
     int i, k;
@@ -566,6 +568,7 @@ static Bigint * s2b (const char *s, int nd0, int nd, ULong y9, int dplen) {
     return b;
 }
 
+/*===========================================================================*/
 static int hi0bits (ULong x) {
     int k = 0;
 
@@ -594,6 +597,7 @@ static int hi0bits (ULong x) {
     return k;
 }
 
+/*===========================================================================*/
 static int lo0bits (ULong *y) {
     int k;
     ULong x = *y;
@@ -645,6 +649,7 @@ static int lo0bits (ULong *y) {
     return k;
 }
 
+/*===========================================================================*/
 static Bigint * i2b (int i) {
     Bigint *b;
 
@@ -654,6 +659,7 @@ static Bigint * i2b (int i) {
     return b;
 }
 
+/*===========================================================================*/
 static Bigint * mult (Bigint *a, Bigint *b) {
     Bigint *c;
     int k, wa, wb, wc;
@@ -762,6 +768,7 @@ static Bigint * mult (Bigint *a, Bigint *b) {
 
 static Bigint *p5s;
 
+/*===========================================================================*/
 static Bigint * pow5mult (Bigint *b, int k) {
     Bigint *b1, *p5, *p51;
     int i;
@@ -818,9 +825,7 @@ static Bigint * pow5mult (Bigint *b, int k) {
     return b;
 }
 
-
-
-
+/*===========================================================================*/
 static Bigint * lshift (Bigint *b, int k) {
     int i, k1, n, n1;
     Bigint *b1;
@@ -883,8 +888,7 @@ static Bigint * lshift (Bigint *b, int k) {
     return b1;
 }
 
-
-
+/*===========================================================================*/
 static int cmp (Bigint *a, Bigint *b) {
     ULong *xa, *xa0, *xb, *xb0;
     int i, j;
@@ -919,6 +923,7 @@ static int cmp (Bigint *a, Bigint *b) {
     return 0;
 }
 
+/*===========================================================================*/
 static Bigint * diff (Bigint *a, Bigint *b) {
     Bigint *c;
     int i, wa, wb;
@@ -1006,12 +1011,7 @@ static Bigint * diff (Bigint *a, Bigint *b) {
     return c;
 }
 
-
-
-
-
-
-
+/*===========================================================================*/
 static double ulp (U *x) {
     Long L;
     U u;
@@ -1040,9 +1040,7 @@ static double ulp (U *x) {
     return dval(&u);
 }
 
-
-
-
+/*===========================================================================*/
 static double b2d (Bigint *a, int *e) {
     ULong *xa, *xa0, w, y, z;
     int k;
@@ -1102,7 +1100,7 @@ static double b2d (Bigint *a, int *e) {
     return dval(&d);
 }
 
-
+/*===========================================================================*/
 static Bigint * d2b (U *d, int *e, int *bits) {
     Bigint *b;
     int de, k;
@@ -1224,8 +1222,7 @@ static Bigint * d2b (U *d, int *e, int *bits) {
 #undef d0
 #undef d1
 
-
-
+/*===========================================================================*/
 static double ratio (Bigint *a, Bigint *b) {
     U da, db;
     int k, ka, kb;
@@ -1247,19 +1244,14 @@ static double ratio (Bigint *a, Bigint *b) {
     return dval(&da) / dval(&db);
 }
 
-
-
-
+/*===========================================================================*/
 static const double tens[] = {
     1e0, 1e1, 1e2, 1e3, 1e4, 1e5, 1e6, 1e7, 1e8, 1e9,
     1e10, 1e11, 1e12, 1e13, 1e14, 1e15, 1e16, 1e17, 1e18, 1e19,
     1e20, 1e21, 1e22
 };
 
-
-
- static const double
-bigtens[] = { 1e16, 1e32, 1e64, 1e128, 1e256 };
+static const double bigtens[] = { 1e16, 1e32, 1e64, 1e128, 1e256 };
 static const double tinytens[] = { 1e-16, 1e-32, 1e-64, 1e-128,
 #if defined(Avoid_Underflow)
         9007199254740992.0 * 9007199254740992.e-256 /* = 2^106 * 1e-256 */
@@ -1268,14 +1260,11 @@ static const double tinytens[] = { 1e-16, 1e-32, 1e-64, 1e-128,
 #endif
 };
 
-
+/*===========================================================================*/
 /* The factor of 2^53 in tinytens[4] helps us avoid setting the underflow */
 /* flag unnecessarily.  It leads to a song and dance at the end of strtod. */
 #define Scale_Bit 0x10
 #define n_bigtens 5
-
-
-
 
 #undef Need_Hexdig
 #if defined(INFNAN_CHECK) && !defined(No_Hex_NaN)
@@ -1308,6 +1297,7 @@ static unsigned char hexdig[256] = {
 #endif
 
 
+/*===========================================================================*/
 #if defined(INFNAN_CHECK)
 #   if !defined(NAN_WORD0)
 #       define NAN_WORD0 0x7ff80000
@@ -1316,6 +1306,7 @@ static unsigned char hexdig[256] = {
 #       define NAN_WORD1 0
 #   endif
 
+/*===========================================================================*/
 static int match (const char **sp, const char *t) {
     int c, d;
     const char *s = *sp;
@@ -1411,8 +1402,7 @@ static void hexnan (U *rvp, const char **sp) {
 #   define kmask 15
 #endif
 
-
-
+/*===========================================================================*/
 #if !defined(NO_HEX_FP) || defined(Honor_FLT_ROUNDS)
 static Bigint * increment(Bigint *b) {
     ULong *x, *xe;
@@ -1439,14 +1429,11 @@ static Bigint * increment(Bigint *b) {
     }
     return b;
 }
+#endif
 
-#endif /*}*/
-
-
-
+/*===========================================================================*/
 #if !defined(NO_HEX_FP)
-
-static void rshift(Bigint *b, int k) {
+static void rshift (Bigint *b, int k) {
     ULong *x, *x1, *xe, y;
     int n;
 
@@ -1477,9 +1464,8 @@ static void rshift(Bigint *b, int k) {
     }
 }
 
-
-
-static ULong any_on(Bigint *b, int k) {
+/*===========================================================================*/
+static ULong any_on (Bigint *b, int k) {
     int n, nwds;
     ULong *x, *x0, x1, x2;
 
@@ -1514,7 +1500,7 @@ enum {  /* rounding values: same as FLT_ROUNDS */
     Round_down = 3
 };
 
-
+/*===========================================================================*/
 void gethex (const char **sp, U *rvp, int rounding, int sign) {
     Bigint *b;
     const unsigned char *decpt, *s0, *s, *s1;
@@ -1865,9 +1851,7 @@ void gethex (const char **sp, U *rvp, int rounding, int sign) {
 }
 #endif
 
-
-
-
+/*===========================================================================*/
 static int dshift (Bigint *b, int p2) {
     int rv = hi0bits(b->x[b->wds-1]) - 4;
     if (p2 > 0) {
@@ -1876,8 +1860,7 @@ static int dshift (Bigint *b, int p2) {
     return rv & kmask;
 }
 
-
-
+/*===========================================================================*/
 static int quorem (Bigint *b, Bigint *S) {
     int n;
     ULong *bx, *bxe, q, *sx, *sxe;
@@ -2002,8 +1985,7 @@ static int quorem (Bigint *b, Bigint *S) {
     return q;
 }
 
-
-
+/*===========================================================================*/
 #if defined(Avoid_Underflow) || !defined(NO_STRTOD_BIGCOMP)
 static double sulp (U *x, BCinfo *bc) {
     U u;
@@ -2020,8 +2002,7 @@ static double sulp (U *x, BCinfo *bc) {
 }
 #endif
 
-
-
+/*===========================================================================*/
 #if !defined(NO_STRTOD_BIGCOMP)
 static void bigcomp (U *rv, const char *s0, BCinfo *bc) {
     Bigint *b, *d;
@@ -2258,7 +2239,7 @@ odd:
 }
 #endif /* NO_STRTOD_BIGCOMP */
 
-
+/*===========================================================================*/
 double strtod (const char *s00, char **se) {
     int bb2, bb5, bbe, bd2, bd5, bbbits, bs2, c, e, e1;
     int esign, i, j, k, nd, nd0, nf, nz, nz0, nz1, sign;
@@ -2617,7 +2598,6 @@ double strtod (const char *s00, char **se) {
         }
     }
 #endif
-
 
     /* Get starting approximation = rv * 10**e1 */
 
@@ -3420,12 +3400,11 @@ double strtod (const char *s00, char **se) {
     return sign ? -dval(&rv) : dval(&rv);
 }
 
-
-
 #if !defined(MULTIPLE_THREADS)
  static char *dtoa_result;
 #endif
 
+/*===========================================================================*/
 static char * rv_alloc (int i) {
     int j, k, *r;
 
@@ -3442,8 +3421,7 @@ static char * rv_alloc (int i) {
         (char *)(r+1);
 }
 
-
-
+/*===========================================================================*/
 static char * nrv_alloc (const char *s, char **rve, int n) {
     char *rv, *t;
 
@@ -3457,13 +3435,12 @@ static char * nrv_alloc (const char *s, char **rve, int n) {
     return rv;
 }
 
-
+/*===========================================================================*/
 /* freedtoa(s) must be used to free values s returned by dtoa
  * when MULTIPLE_THREADS is #defined.  It should be used in all cases,
  * but for consistency with earlier versions of dtoa, it is optional
  * when MULTIPLE_THREADS is not defined.
  */
-
 void freedtoa (char *s) {
     Bigint *b = (Bigint *)((int *)s - 1);
     b->maxwds = 1 << (b->k = *(int*)b);
@@ -3476,6 +3453,7 @@ void freedtoa (char *s) {
 }
 
 
+/*===========================================================================*/
 /* dtoa for IEEE arithmetic (dmg): convert double to ASCII string.
  *
  * Inspired by "How to Print Floating-Point Numbers Accurately" by
@@ -3509,7 +3487,6 @@ void freedtoa (char *s) {
  *     something like 10^(k-15) that we must resort to the Long
  *     calculation.
  */
-
 char * dtoa (double dd, int mode, int ndigits, int *decpt, int *sign, char **rve) {
  /* Arguments ndigits, decpt, sign are similar to those
     of ecvt and fcvt; trailing zeros are suppressed from
@@ -4284,9 +4261,7 @@ char * dtoa (double dd, int mode, int ndigits, int *decpt, int *sign, char **rve
 #endif
 
 
-
-
-
+/*===========================================================================*/
 int main () {
     const char * str = "3.1415";
     char * end = 0;

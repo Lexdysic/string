@@ -113,10 +113,6 @@
  *  and if "unsigned Llong" does not work as an unsigned version of
  *  Llong, #define #ULLong to be the corresponding unsigned type.
  *
- * #define Bad_float_h if your system lacks a float.h or if it does not
- *  define some or all of DBL_DIG, DBL_MAX_10_EXP, DBL_MAX_EXP,
- *  FLT_RADIX, FLT_ROUNDS, and DBL_MAX.
- *
  * #define MALLOC your_malloc, where your_malloc(n) acts like malloc(n)
  *  if memory is available and otherwise does something you deem
  *  appropriate.  If MALLOC is undefined, malloc will be invoked
@@ -261,22 +257,8 @@ static double private_mem[PRIVATE_mem], *pmem_next = private_mem;
 #endif
 
 #include "errno.h"
-
-#if defined(Bad_float_h)
-#   define DBL_DIG 15
-#   define DBL_MAX_10_EXP 308
-#   define DBL_MAX_EXP 1024
-#   define FLT_RADIX 2
-#   if !defined(LONG_MAX)
-#       define LONG_MAX 2147483647
-#   endif
-#else
-#   include "float.h"
-#endif
-
-#if !defined(__MATH_H__)
-#   include "math.h"
-#endif
+#include "float.h"
+#include "math.h"
 
 #if defined(__cplusplus)
 extern "C" {

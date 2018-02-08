@@ -254,27 +254,19 @@ static double private_mem[PRIVATE_mem], *pmem_next = private_mem;
 #endif
 
 #undef Avoid_Underflow
-#define IEEE_Arith
 
-#if defined(IEEE_Arith)
-#   if !defined(NO_INFNAN_CHECK)
-#       undef INFNAN_CHECK
-#       define INFNAN_CHECK
-#   endif
-#else
+#if !defined(NO_INFNAN_CHECK)
 #   undef INFNAN_CHECK
-#   define NO_STRTOD_BIGCOMP
+#   define INFNAN_CHECK
 #endif
 
 #include "errno.h"
 
 #if defined(Bad_float_h)
-#   if defined(IEEE_Arith)
-#       define DBL_DIG 15
-#       define DBL_MAX_10_EXP 308
-#       define DBL_MAX_EXP 1024
-#       define FLT_RADIX 2
-#   endif
+#   define DBL_DIG 15
+#   define DBL_MAX_10_EXP 308
+#   define DBL_MAX_EXP 1024
+#   define FLT_RADIX 2
 #   if !defined(LONG_MAX)
 #       define LONG_MAX 2147483647
 #   endif
@@ -338,64 +330,53 @@ extern int strtod_diglim;
 /* Quick_max = floor((P-1)*log(FLT_RADIX)/log(10) - 1) */
 /* Int_max = floor(P*log(FLT_RADIX)/log(10) - 1) */
 
-#if defined(IEEE_Arith)
-#   define Exp_shift  20
-#   define Exp_shift1 20
-#   define Exp_msk1    0x100000
-#   define Exp_msk11   0x100000
-#   define Exp_mask  0x7ff00000
-#   define P 53
-#   define Nbits 53
-#   define Bias 1023
-#   define Emax 1023
-#   define Emin (-1022)
-#   define Exp_1  0x3ff00000
-#   define Exp_11 0x3ff00000
-#   define Ebits 11
-#   define Frac_mask  0xfffff
-#   define Frac_mask1 0xfffff
-#   define Ten_pmax 22
-#   define Bletch 0x10
-#   define Bndry_mask  0xfffff
-#   define Bndry_mask1 0xfffff
-#   define LSB 1
-#   define Sign_bit 0x80000000
-#   define Log2P 1
-#   define Tiny0 0
-#   define Tiny1 1
-#   define Quick_max 14
-#   define Int_max 14
-#   if !defined(NO_IEEE_Scale)
-#       define Avoid_Underflow
-#       if defined(Flush_Denorm)  /* debugging option */
-#           undef Sudden_Underflow
-#       endif
-#   endif
-
-#   if !defined(Flt_Rounds)
-#       if defined(FLT_ROUNDS)
-#           define Flt_Rounds FLT_ROUNDS
-#       else
-#           define Flt_Rounds 1
-#       endif
-#   endif
-#   if defined(Honor_FLT_ROUNDS)
-#       undef Check_FLT_ROUNDS
-#       define Check_FLT_ROUNDS
-#   else
-#       define Rounding Flt_Rounds
-#   endif
+#define Exp_shift  20
+#define Exp_shift1 20
+#define Exp_msk1    0x100000
+#define Exp_msk11   0x100000
+#define Exp_mask  0x7ff00000
+#define P 53
+#define Nbits 53
+#define Bias 1023
+#define Emax 1023
+#define Emin (-1022)
+#define Exp_1  0x3ff00000
+#define Exp_11 0x3ff00000
+#define Ebits 11
+#define Frac_mask  0xfffff
+#define Frac_mask1 0xfffff
+#define Ten_pmax 22
+#define Bletch 0x10
+#define Bndry_mask  0xfffff
+#define Bndry_mask1 0xfffff
+#define LSB 1
+#define Sign_bit 0x80000000
+#define Log2P 1
+#define Tiny0 0
+#define Tiny1 1
+#define Quick_max 14
+#define Int_max 14
+#if !defined(NO_IEEE_Scale)
+#    define Avoid_Underflow
+#    if defined(Flush_Denorm)  /* debugging option */
+#        undef Sudden_Underflow
+#    endif
+#endif
+#if !defined(Flt_Rounds)
+#    if defined(FLT_ROUNDS)
+#        define Flt_Rounds FLT_ROUNDS
+#    else
+#        define Flt_Rounds 1
+#    endif
+#endif
+#if defined(Honor_FLT_ROUNDS)
+#    undef Check_FLT_ROUNDS
+#    define Check_FLT_ROUNDS
 #else
-#   undef Check_FLT_ROUNDS
-#   undef Honor_FLT_ROUNDS
-#   undef SET_INEXACT
-#   undef  Sudden_Underflow
-#   define Sudden_Underflow
-#endif /* IEEE_Arith */
+#    define Rounding Flt_Rounds
+#endif
 
-#if !defined(IEEE_Arith)
-#   define ROUND_BIASED
-#elif defined(ROUND_BIASED_without_Round_Up)
+#if defined(ROUND_BIASED_without_Round_Up)
 #   undef  ROUND_BIASED
 #   define ROUND_BIASED
 #endif
@@ -1303,26 +1284,20 @@ static CONST double tens[] = {
 
 
  static CONST double
-#if defined(IEEE_Arith)
 bigtens[] = { 1e16, 1e32, 1e64, 1e128, 1e256 };
 static CONST double tinytens[] = { 1e-16, 1e-32, 1e-64, 1e-128,
-#   if defined(Avoid_Underflow)
+#if defined(Avoid_Underflow)
         9007199254740992.0 * 9007199254740992.e-256 /* = 2^106 * 1e-256 */
-#   else
+#else
         1e-256
-#   endif
+#endif
 };
 
 
 /* The factor of 2^53 in tinytens[4] helps us avoid setting the underflow */
 /* flag unnecessarily.  It leads to a song and dance at the end of strtod. */
-#   define Scale_Bit 0x10
-#   define n_bigtens 5
-#else
-bigtens[] = { 1e16, 1e32 };
-static CONST double tinytens[] = { 1e-16, 1e-32 };
-#   define n_bigtens 2
-#endif
+#define Scale_Bit 0x10
+#define n_bigtens 5
 
 
 
@@ -1573,12 +1548,8 @@ void gethex (CONST char **sp, U *rvp, int rounding, int sign) {
     int big, denorm, esign, havedig, k, n, nbits, up, zret;
 
     enum {
-#   if defined(IEEE_Arith)
         emax = 0x7fe - Bias - P + 1,
         emin = Emin - P + 1
-#   else
-        emin = Emin - P,
-#   endif
     };
 
 #   if defined(USE_LOCALE)
@@ -1707,7 +1678,6 @@ void gethex (CONST char **sp, U *rvp, int rounding, int sign) {
 
     if (big) {
         if (esign) {
-#   if defined(IEEE_Arith)
             switch(rounding) {
             case Round_up:
                 if (sign) {
@@ -1720,9 +1690,8 @@ void gethex (CONST char **sp, U *rvp, int rounding, int sign) {
                 }
                 goto ret_tiny;
             }
-#   endif
+
             goto retz;
-#   if defined(IEEE_Arith)
  ret_tinyf:
             Bfree(b);
  ret_tiny:
@@ -1732,8 +1701,8 @@ void gethex (CONST char **sp, U *rvp, int rounding, int sign) {
             word0(rvp) = 0;
             word1(rvp) = 1;
             return;
-#   endif
         }
+
         switch(rounding) {
         case Round_near:
             goto ovfl1;
@@ -1748,6 +1717,7 @@ void gethex (CONST char **sp, U *rvp, int rounding, int sign) {
             }
             goto ret_big;
         }
+
  ret_big:
         word0(rvp) = Big0;
         word1(rvp) = Big1;
@@ -1833,7 +1803,6 @@ void gethex (CONST char **sp, U *rvp, int rounding, int sign) {
         denorm = 1;
         n = emin - e;
         if (n >= nbits) {
-#   if defined(IEEE_Arith)
             switch (rounding) {
             case Round_near:
                 if (n == nbits && (n < 2 || any_on(b,n-1))) {
@@ -1850,7 +1819,7 @@ void gethex (CONST char **sp, U *rvp, int rounding, int sign) {
                     goto ret_tinyf;
                 }
             }
-#   endif /* } IEEE_Arith */
+
             Bfree(b);
  retz:
 #   if !defined(NO_ERRNO)
@@ -1909,7 +1878,6 @@ void gethex (CONST char **sp, U *rvp, int rounding, int sign) {
         }
     }
 
-#   if defined(IEEE_Arith)
     if (denorm) {
         word0(rvp) = b->wds > 1 ? b->x[1] & ~0x100000 : 0;
     }
@@ -1917,11 +1885,10 @@ void gethex (CONST char **sp, U *rvp, int rounding, int sign) {
         word0(rvp) = (b->x[1] & ~0x100000) | ((e + 0x3ff + 52) << 20);
     }
     word1(rvp) = b->x[0];
-#   endif
 
     Bfree(b);
 }
-#endif /*!NO_HEX_FP}*/
+#endif
 
 
 
@@ -2654,17 +2621,16 @@ double strtod (const char *s00, char **se) {
     e1 += nd - k;
 
 
-#if defined(IEEE_Arith)
-#   if defined(SET_INEXACT)
+#if defined(SET_INEXACT)
     bc.inexact = 1;
     if (k <= DBL_DIG) {
         oldinexact = get_inexact();
     }
-#   endif
-#   if defined(Avoid_Underflow)
+#endif
+#if defined(Avoid_Underflow)
     bc.scale = 0;
-#   endif
-#   if defined(Honor_FLT_ROUNDS)
+#endif
+#if defined(Honor_FLT_ROUNDS)
     if (bc.rounding >= 2) {
         if (sign) {
             bc.rounding = bc.rounding == 2 ? 0 : 2;
@@ -2675,8 +2641,7 @@ double strtod (const char *s00, char **se) {
             }
         }
     }
-#   endif
-#endif /*IEEE_Arith*/
+#endif
 
 
     /* Get starting approximation = rv * 10**e1 */
@@ -2689,8 +2654,7 @@ double strtod (const char *s00, char **se) {
             if (e1 > DBL_MAX_10_EXP) {
  ovfl:
                 /* Can't trust HUGE_VAL */
-#if defined(IEEE_Arith)
-#   if defined(Honor_FLT_ROUNDS)
+#if defined(Honor_FLT_ROUNDS)
                 switch(bc.rounding) {
                 case 0: /* toward 0 */
                 case 3: /* toward -infinity */
@@ -2701,19 +2665,15 @@ double strtod (const char *s00, char **se) {
                     word0(&rv) = Exp_mask;
                     word1(&rv) = 0;
                 }
-#   else /*Honor_FLT_ROUNDS*/
+#else /*Honor_FLT_ROUNDS*/
                 word0(&rv) = Exp_mask;
                 word1(&rv) = 0;
-#   endif /*Honor_FLT_ROUNDS*/
-#   if defined(SET_INEXACT)
+#endif /*Honor_FLT_ROUNDS*/
+#if defined(SET_INEXACT)
                 /* set overflow bit */
                 dval(&rv0) = 1e300;
                 dval(&rv0) *= dval(&rv0);
-#   endif
-#else /*IEEE_Arith*/
-                word0(&rv) = Big0;
-                word1(&rv) = Big1;
-#endif /*IEEE_Arith*/
+#endif
 
 
  range_err:
@@ -3096,7 +3056,7 @@ double strtod (const char *s00, char **se) {
                 bc.dsign
                 || word1(&rv)
                 || word0(&rv) & Bndry_mask
-#if defined(IEEE_Arith) && defined(Avoid_Underflow)
+#if defined(Avoid_Underflow)
                 || (word0(&rv) & Exp_mask) <= (2*P+1)*Exp_msk1
 #else
                 || (word0(&rv) & Exp_mask) <= Exp_msk1
@@ -3463,12 +3423,7 @@ double strtod (const char *s00, char **se) {
         dval(&rv) *= dval(&rv0);
 #   if !defined(NO_ERRNO)
         /* try to avoid the bug of testing an 8087 register value */
-#       if defined(IEEE_Arith)
-        if (!(word0(&rv) & Exp_mask))
-#       else
-        if (word0(&rv) == 0 && word1(&rv) == 0)
-#       endif
-        {
+        if (!(word0(&rv) & Exp_mask)) {
             errno = ERANGE;
         }
 #   endif
@@ -3630,7 +3585,7 @@ char * dtoa (double dd, int mode, int ndigits, int *decpt, int *sign, char **rve
     double ds;
     char *s, *s0;
 
-#if !defined(No_leftright) && defined(IEEE_Arith)
+#if !defined(No_leftright)
     U eps1;
 #endif
 
@@ -3669,23 +3624,14 @@ char * dtoa (double dd, int mode, int ndigits, int *decpt, int *sign, char **rve
         *sign = 0;
     }
 
-#if defined(IEEE_Arith)
-#   if defined(IEEE_Arith)
-    if ((word0(&u) & Exp_mask) == Exp_mask)
-#   else
-    if (word0(&u)  == 0x8000)
-#   endif
-    {
+    if ((word0(&u) & Exp_mask) == Exp_mask) {
         /* Infinity or NaN */
         *decpt = 9999;
-#   if defined(IEEE_Arith)
         if (!word1(&u) && !(word0(&u) & 0xfffff)) {
             return nrv_alloc("Infinity", rve, 8);
         }
-#   endif
         return nrv_alloc("NaN", rve, 3);
     }
-#endif
 
     if (!dval(&u)) {
         *decpt = 1;
@@ -3914,7 +3860,6 @@ char * dtoa (double dd, int mode, int ndigits, int *decpt, int *sign, char **rve
              * generating digits needed.
              */
             dval(&eps) = 0.5/tens[ilim-1] - dval(&eps);
-#    if defined(IEEE_Arith)
             if (k0 < 0 && j1 >= 307) {
                 eps1.d = 1.01e256; /* 1.01 allows roundoff in the next few lines */
                 word0(&eps1) -= Exp_msk1 * (Bias+P-1);
@@ -3928,7 +3873,6 @@ char * dtoa (double dd, int mode, int ndigits, int *decpt, int *sign, char **rve
                     eps.d = eps1.d;
                 }
             }
-#    endif
 
             for (i = 0;;) {
                 L = dval(&u);

@@ -381,9 +381,6 @@ struct BCinfo {
 };
 
 
-
-#define FFFFFFFF 0xffffffffUL
-
 #if defined(NO_LONG_LONG)
 #   undef ULLong
 #   if defined(Just_16)
@@ -505,7 +502,7 @@ static Bigint * multadd (Bigint *b, int m, int a) {
 #if defined(ULLong)
         y = *x * (ULLong)m + carry;
         carry = y >> 32;
-        *x++ = y & FFFFFFFF;
+        *x++ = y & 0xffffffffUL;
 #elif defined(Pack_32)
         xi = *x;
         y = (xi & 0xffff) * m + carry;
@@ -702,7 +699,7 @@ static Bigint * mult (Bigint *a, Bigint *b) {
             do {
                 z = *x++ * (ULLong)y + *xc + carry;
                 carry = z >> 32;
-                *xc++ = z & FFFFFFFF;
+                *xc++ = z & 0xffffffffUL;
             }
             while(x < xae);
             *xc = carry;
@@ -965,13 +962,13 @@ static Bigint * diff (Bigint *a, Bigint *b) {
     do {
         y = (ULLong)*xa++ - *xb++ - borrow;
         borrow = y >> 32 & (ULong)1;
-        *xc++ = y & FFFFFFFF;
+        *xc++ = y & 0xffffffffUL;
     }
     while(xb < xbe);
     while(xa < xae) {
         y = *xa++ - borrow;
         borrow = y >> 32 & (ULong)1;
-        *xc++ = y & FFFFFFFF;
+        *xc++ = y & 0xffffffffUL;
     }
 #elif defined(Pack_32)
     do {
@@ -1929,9 +1926,9 @@ static int quorem (Bigint *b, Bigint *S) {
 #if defined(ULLong)
             ys = *sx++ * (ULLong)q + carry;
             carry = ys >> 32;
-            y = *bx - (ys & FFFFFFFF) - borrow;
+            y = *bx - (ys & 0xffffffffUL) - borrow;
             borrow = y >> 32 & (ULong)1;
-            *bx++ = y & FFFFFFFF;
+            *bx++ = y & 0xffffffffUL;
 #elif defined(Pack_32)
             si = *sx++;
             ys = (si & 0xffff) * q + carry;
@@ -1970,9 +1967,9 @@ static int quorem (Bigint *b, Bigint *S) {
 #if defined(ULLong)
             ys = *sx++ + carry;
             carry = ys >> 32;
-            y = *bx - (ys & FFFFFFFF) - borrow;
+            y = *bx - (ys & 0xffffffffUL) - borrow;
             borrow = y >> 32 & (ULong)1;
-            *bx++ = y & FFFFFFFF;
+            *bx++ = y & 0xffffffffUL;
 #elif defined(Pack_32)
             si = *sx++;
             ys = (si & 0xffff) + carry;

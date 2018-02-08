@@ -33,7 +33,7 @@
  * file.
  */
 
-/* strtod for IEEE-, VAX-, and IBM-arithmetic machines.
+/* strtod for IEEE-.
  * (Note that IEEE arithmetic is disabled by gcc's -ffast-math flag.)
  *
  * This strtod returns a nearest machine number to the input decimal
@@ -46,8 +46,7 @@
  *
  * Modifications:
  *
- *  1. We only require IEEE, IBM, or VAX double-precision
- *      arithmetic (not IEEE double-extended).
+ *  1. We only require IEEE.
  *  2. We get by with floating-point arithmetic in a case that
  *      Clinger missed -- when we're computing d * 10^n
  *      for a small integer d and the integer n is not too
@@ -73,10 +72,6 @@
  *
  * #define Long int on machines with 32-bit ints and 64-bit longs.
  *
- * #define IBM for IBM mainframe-style floating-point arithmetic.
- *
- * #define VAX for VAX-style floating-point arithmetic (D_floating).
- *
  * #define No_leftright to omit left-right logic in fast floating-point
  *  computation of dtoa.  This will cause dtoa modes 4 and 5 to be
  *  treated the same as modes 2 and 3 for some inputs.
@@ -95,7 +90,7 @@
  *
  * #define RND_PRODQUOT to use rnd_prod and rnd_quot (assembly routines
  *  that use extended-precision instructions to compute rounded
- *  products and quotients) with IBM.
+ *  products and quotients).
  *
  * #define ROUND_BIASED for IEEE-format with biased rounding and arithmetic
  *  that rounds toward +Infinity.
@@ -258,14 +253,8 @@ extern void *MALLOC(size_t);
 static double private_mem[PRIVATE_mem], *pmem_next = private_mem;
 #endif
 
-#undef IEEE_Arith
 #undef Avoid_Underflow
-#if defined(IEEE_MC68k)
-#   define IEEE_Arith
-#endif
-#if defined(IEEE_8087)
-#   define IEEE_Arith
-#endif
+#define IEEE_Arith
 
 #if defined(IEEE_Arith)
 #   if !defined(NO_INFNAN_CHECK)
@@ -286,20 +275,6 @@ static double private_mem[PRIVATE_mem], *pmem_next = private_mem;
 #       define DBL_MAX_EXP 1024
 #       define FLT_RADIX 2
 #   endif
-#   if defined(IBM)
-#       define DBL_DIG 16
-#       define DBL_MAX_10_EXP 75
-#       define DBL_MAX_EXP 63
-#       define FLT_RADIX 16
-#       define DBL_MAX 7.2370055773322621e+75
-#   endif
-#   if defined(VAX)
-#       define DBL_DIG 16
-#       define DBL_MAX_10_EXP 38
-#       define DBL_MAX_EXP 127
-#       define FLT_RADIX 2
-#       define DBL_MAX 1.7014118346046923e+38
-#   endif
 #   if !defined(LONG_MAX)
 #       define LONG_MAX 2147483647
 #   endif
@@ -319,8 +294,8 @@ extern "C" {
 #   define CONST const
 #endif
 
-#if (defined(IEEE_8087) ^ defined(IEEE_MC68k) ^ defined(VAX) ^ defined(IBM)) != 0
-#   error Exactly one of IEEE_8087, IEEE_MC68k, VAX, or IBM should be defined.
+#if (defined(IEEE_8087) ^ defined(IEEE_MC68k)) != 1
+#   error Exactly one of IEEE_8087 or IEEE_MC68k should be defined.
 #endif
 
 typedef union {
@@ -351,7 +326,7 @@ extern int strtod_diglim;
  * An alternative that might be better on some machines is
  * #define Storeinc(a,b,c) (*a++ = b << 16 | c & 0xffff)
  */
-#if defined(IEEE_8087) || defined(VAX)
+#if defined(IEEE_8087)
 #   define Storeinc(a,b,c) (((unsigned short *)a)[1] = (unsigned short)b, ((unsigned short *)a)[0] = (unsigned short)c, a++)
 #else
 #   define Storeinc(a,b,c) (((unsigned short *)a)[0] = (unsigned short)b, ((unsigned short *)a)[1] = (unsigned short)c, a++)
@@ -416,65 +391,6 @@ extern int strtod_diglim;
 #   undef SET_INEXACT
 #   undef  Sudden_Underflow
 #   define Sudden_Underflow
-#   if defined(IBM)
-#       undef Flt_Rounds
-#       define Flt_Rounds 0
-#       define Exp_shift  24
-#       define Exp_shift1 24
-#       define Exp_msk1   0x1000000
-#       define Exp_msk11  0x1000000
-#       define Exp_mask  0x7f000000
-#       define P 14
-#       define Nbits 56
-#       define Bias 65
-#       define Emax 248
-#       define Emin (-260)
-#       define Exp_1  0x41000000
-#       define Exp_11 0x41000000
-#       define Ebits 8  /* exponent has 7 bits, but 8 is the right value in b2d */
-#       define Frac_mask  0xffffff
-#       define Frac_mask1 0xffffff
-#       define Bletch 4
-#       define Ten_pmax 22
-#       define Bndry_mask  0xefffff
-#       define Bndry_mask1 0xffffff
-#       define LSB 1
-#       define Sign_bit 0x80000000
-#       define Log2P 4
-#       define Tiny0 0x100000
-#       define Tiny1 0
-#       define Quick_max 14
-#       define Int_max 15
-#   else /* VAX */
-#       undef Flt_Rounds
-#       define Flt_Rounds 1
-#       define Exp_shift  23
-#       define Exp_shift1 7
-#       define Exp_msk1    0x80
-#       define Exp_msk11   0x800000
-#       define Exp_mask  0x7f80
-#       define P 56
-#       define Nbits 56
-#       define Bias 129
-#       define Emax 126
-#       define Emin (-129)
-#       define Exp_1  0x40800000
-#       define Exp_11 0x4080
-#       define Ebits 8
-#       define Frac_mask  0x7fffff
-#       define Frac_mask1 0xffff007f
-#       define Ten_pmax 24
-#       define Bletch 2
-#       define Bndry_mask  0xffff007f
-#       define Bndry_mask1 0xffff007f
-#       define LSB 0x10000
-#       define Sign_bit 0x8000
-#       define Log2P 1
-#       define Tiny0 0x80
-#       define Tiny1 0
-#       define Quick_max 15
-#       define Int_max 15
-#   endif /* IBM, VAX */
 #endif /* IEEE_Arith */
 
 #if !defined(IEEE_Arith)
@@ -1148,10 +1064,6 @@ static double ulp (U *x) {
 #if !defined(Avoid_Underflow) && !defined(Sudden_Underflow)
     if (L > 0) {
 #endif
-
-#if defined(IBM)
-        L |= Exp_msk1 >> 4;
-#endif
         word0(&u) = L;
         word1(&u) = 0;
 #if !defined(Avoid_Underflow) && !defined(Sudden_Underflow)
@@ -1179,12 +1091,9 @@ static double b2d (Bigint *a, int *e) {
     ULong *xa, *xa0, w, y, z;
     int k;
     U d;
-#if defined(VAX)
-    ULong d0, d1;
-#else
-#   define d0 word0(&d)
-#   define d1 word1(&d)
-#endif
+
+#define d0 word0(&d)
+#define d1 word1(&d)
 
     xa0 = a->x;
     xa = xa0 + a->wds;
@@ -1231,13 +1140,9 @@ static double b2d (Bigint *a, int *e) {
 #endif
 
  ret_d:
-#if defined(VAX)
-    word0(&d) = d0 >> 16 | d0 << 16;
-    word1(&d) = d1 >> 16 | d1 << 16;
-#else
-#   undef d0
-#   undef d1
-#endif
+
+#undef d0
+#undef d1
     return dval(&d);
 }
 
@@ -1249,14 +1154,9 @@ static Bigint * d2b (U *d, int *e, int *bits) {
 #if !defined(Sudden_Underflow)
     int i;
 #endif
-#if defined(VAX)
-    ULong d0, d1;
-    d0 = word0(d) >> 16 | word0(d) << 16;
-    d1 = word1(d) >> 16 | word1(d) << 16;
-#else
-#   define d0 word0(d)
-#   define d1 word1(d)
-#endif
+
+#define d0 word0(d)
+#define d1 word1(d)
 
 #if defined(Pack_32)
     b = Balloc(1);
@@ -1269,9 +1169,7 @@ static Bigint * d2b (U *d, int *e, int *bits) {
     d0 &= 0x7fffffff;   /* clear sign bit, which we ignore */
 #if defined(Sudden_Underflow)
     de = (int)(d0 >> Exp_shift);
-#   if !defined(IBM)
     z |= Exp_msk11;
-#   endif
 #else
     if ((de = (int)(d0 >> Exp_shift))) {
         z |= Exp_msk1;
@@ -1352,13 +1250,8 @@ static Bigint * d2b (U *d, int *e, int *bits) {
 #if !defined(Sudden_Underflow)
     if (de) {
 #endif
-#if defined(IBM)
-        *e = (de - Bias - (P-1) << 2) + k;
-        *bits = 4*P + 8 - k - hi0bits(word0(d) & Frac_mask);
-#else
         *e = de - Bias - (P-1) + k;
         *bits = P - k;
-#endif
 #if !defined(Sudden_Underflow)
     }
     else {
@@ -1388,20 +1281,6 @@ static double ratio (Bigint *a, Bigint *b) {
 #else
     k = ka - kb + 16*(a->wds - b->wds);
 #endif
-#if defined(IBM)
-    if (k > 0) {
-        word0(&da) += (k >> 2)*Exp_msk1;
-        if (k &= 3)
-            dval(&da) *= 1 << k;
-    }
-    else {
-        k = -k;
-        word0(&db) += (k >> 2)*Exp_msk1;
-        if (k &= 3) {
-            dval(&db) *= 1 << k;
-        }
-    }
-#else
     if (k > 0) {
         word0(&da) += k*Exp_msk1;
     }
@@ -1409,21 +1288,16 @@ static double ratio (Bigint *a, Bigint *b) {
         k = -k;
         word0(&db) += k*Exp_msk1;
     }
-#endif
     return dval(&da) / dval(&db);
 }
 
 
 
 
-static CONST double
-tens[] = {
-        1e0, 1e1, 1e2, 1e3, 1e4, 1e5, 1e6, 1e7, 1e8, 1e9,
-        1e10, 1e11, 1e12, 1e13, 1e14, 1e15, 1e16, 1e17, 1e18, 1e19,
-        1e20, 1e21, 1e22
-#if defined(VAX)
-        , 1e23, 1e24
-#endif
+static CONST double tens[] = {
+    1e0, 1e1, 1e2, 1e3, 1e4, 1e5, 1e6, 1e7, 1e8, 1e9,
+    1e10, 1e11, 1e12, 1e13, 1e14, 1e15, 1e16, 1e17, 1e18, 1e19,
+    1e20, 1e21, 1e22
 };
 
 
@@ -1445,15 +1319,9 @@ static CONST double tinytens[] = { 1e-16, 1e-32, 1e-64, 1e-128,
 #   define Scale_Bit 0x10
 #   define n_bigtens 5
 #else
-#   if defined(IBM)
-bigtens[] = { 1e16, 1e32, 1e64 };
-static CONST double tinytens[] = { 1e-16, 1e-32, 1e-64 };
-#       define n_bigtens 3
-#   else
 bigtens[] = { 1e16, 1e32 };
 static CONST double tinytens[] = { 1e-16, 1e-32 };
-#       define n_bigtens 2
-#   endif
+#   define n_bigtens 2
 #endif
 
 
@@ -1470,22 +1338,22 @@ static CONST double tinytens[] = { 1e-16, 1e-32 };
 
 #if defined(Need_Hexdig)
 static unsigned char hexdig[256] = {
-    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-    16,17,18,19,20,21,22,23,24,25,0,0,0,0,0,0,
-    0,26,27,28,29,30,31,0,0,0,0,0,0,0,0,0,
-    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-    0,26,27,28,29,30,31,0,0,0,0,0,0,0,0,0,
-    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+    16, 17, 18, 19, 20, 21, 22, 23, 24, 25,  0,  0,  0,  0,  0,  0,
+     0, 26, 27, 28, 29, 30, 31,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0, 26, 27, 28, 29, 30, 31,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0
 };
 #endif
 
@@ -1704,22 +1572,12 @@ void gethex (CONST char **sp, U *rvp, int rounding, int sign) {
     ULong L, lostbits, *x;
     int big, denorm, esign, havedig, k, n, nbits, up, zret;
 
-#   if defined(IBM)
-    int j;
-#   endif
-
     enum {
 #   if defined(IEEE_Arith)
         emax = 0x7fe - Bias - P + 1,
         emin = Emin - P + 1
 #   else
         emin = Emin - P,
-#       if defined(VAX)
-        emax = 0x7ff - Bias - P + 1
-#       endif
-#       if defined(IBM)
-        emax = 0x7f - Bias - P
-#       endif
 #   endif
     };
 
@@ -2061,44 +1919,6 @@ void gethex (CONST char **sp, U *rvp, int rounding, int sign) {
     word1(rvp) = b->x[0];
 #   endif
 
-#   if defined(IBM)
-    if ((j = e & 3)) {
-        k = b->x[0] & ((1 << j) - 1);
-        rshift(b,j);
-        if (k) {
-            switch(rounding) {
-            case Round_up:
-                if (!sign) {
-                    increment(b);
-                }
-                break;
-            case Round_down:
-                if (sign) {
-                    increment(b);
-                }
-                break;
-            case Round_near:
-                j = 1 << (j-1);
-                if (k & j && ((k & (j-1)) | lostbits)) {
-                    increment(b);
-                }
-            }
-        }
-    }
-
-    e >>= 2;
-    word0(rvp) = b->x[1] | ((e + 65 + 13) << 24);
-    word1(rvp) = b->x[0];
-#   endif
-
-
-#   if defined(VAX)
-    /* The next two lines ignore swap of low- and high-order 2 bytes. */
-    /* word0(rvp) = (b->x[1] & ~0x800000) | ((e + 129 + 55) << 23); */
-    /* word1(rvp) = b->x[0]; */
-    word0(rvp) = ((b->x[1] & ~0x800000) >> 16) | ((e + 129 + 55) << 7) | (b->x[1] << 16);
-    word1(rvp) = (b->x[0] >> 16) | (b->x[0] << 16);
-#   endif
     Bfree(b);
 }
 #endif /*!NO_HEX_FP}*/
@@ -2787,19 +2607,15 @@ double strtod (const char *s00, char **se) {
 #if !defined(ROUND_BIASED_without_Round_Up)
         if (e > 0) {
             if (e <= Ten_pmax) {
-#   if defined(VAX)
-                goto vax_ovfl_check;
-#   else
-#       if defined(Honor_FLT_ROUNDS)
+#   if defined(Honor_FLT_ROUNDS)
                 /* round correctly FLT_ROUNDS = 2 or 3 */
                 if (sign) {
                     rv.d = -rv.d;
                     sign = 0;
                 }
-#       endif
+#   endif
                 /* rv = */ rounded_product(dval(&rv), tens[e]);
                 goto ret;
-#   endif
             }
 
             i = DBL_DIG - nd;
@@ -2816,20 +2632,7 @@ double strtod (const char *s00, char **se) {
 #   endif
                 e -= i;
                 dval(&rv) *= tens[i];
-#   if defined(VAX)
-                /* VAX exponent range is so narrow we must
-                 * worry about overflow here...
-                 */
- vax_ovfl_check:
-                word0(&rv) -= P*Exp_msk1;
                 /* rv = */ rounded_product(dval(&rv), tens[e]);
-                if ((word0(&rv) & Exp_mask) > Exp_msk1*(DBL_MAX_EXP+Bias-1-P)) {
-                    goto ovfl;
-                }
-                word0(&rv) += P*Exp_msk1;
-#   else
-                /* rv = */ rounded_product(dval(&rv), tens[e]);
-#   endif
                 goto ret;
             }
         }
@@ -3112,11 +2915,7 @@ double strtod (const char *s00, char **se) {
             }
         }
 #elif defined(Sudden_Underflow)
-#   if defined(IBM)
-        j = 1 + 4*P - 3 - bbbits + ((bbe + bbbits - 1) & 3);
-#   else
         j = P + 1 - bbbits;
-#   endif
 #else
         j = bbe;
         i = j + bbbits - 1; /* logb(rv) */
@@ -3341,12 +3140,7 @@ double strtod (const char *s00, char **se) {
                     if (word0(&rv) == Big0 && word1(&rv) == Big1) {
                         goto ovfl;
                     } 
-                    word0(&rv) = (word0(&rv) & Exp_mask)
-                        + Exp_msk1
-#if defined(IBM)
-                        | Exp_msk1 >> 4
-#endif
-                        ;
+                    word0(&rv) = (word0(&rv) & Exp_mask) + Exp_msk1;
                     word1(&rv) = 0;
 #if defined(Avoid_Underflow)
                     bc.dsign = 0;
@@ -3359,9 +3153,7 @@ double strtod (const char *s00, char **se) {
                 /* boundary case -- decrement exponent */
 #if defined(Sudden_Underflow)
                 L = word0(&rv) & Exp_mask;
-#   if defined(IBM)
-                if (L <  Exp_msk1)
-#   elif defined(Avoid_Underflow)
+#   if defined(Avoid_Underflow)
                 if (L <= (bc.scale ? (2*P+1)*Exp_msk1 : Exp_msk1))
 #   else
                 if (L <= Exp_msk1)
@@ -3397,16 +3189,12 @@ double strtod (const char *s00, char **se) {
 #endif
                 word0(&rv) = L | Bndry_mask1;
                 word1(&rv) = 0xffffffff;
-#if defined(IBM)
-                goto cont;
-#else
 #   if !defined(NO_STRTOD_BIGCOMP)
                 if (bc.nd > nd) {
                     goto cont;
                 }
 #   endif
                 break;
-#endif
             }
 
 #if !defined(ROUND_BIASED)
@@ -3564,12 +3352,8 @@ double strtod (const char *s00, char **se) {
                 word0(&rv) += P*Exp_msk1;
                 adj.d = aadj1 * ulp(&rv);
                 dval(&rv) += adj.d;
-#   if defined(IBM)
-                if ((word0(&rv) & Exp_mask) <  P*Exp_msk1)
-#   else
-                if ((word0(&rv) & Exp_mask) <= P*Exp_msk1)
-#   endif
-                {
+
+                if ((word0(&rv) & Exp_mask) <= P * Exp_msk1) {
                     if (word0(&rv0) == Tiny0 && word1(&rv0) == Tiny1) {
                         if (bc.nd >nd) {
                             bc.uflchk = 1;
@@ -3885,7 +3669,7 @@ char * dtoa (double dd, int mode, int ndigits, int *decpt, int *sign, char **rve
         *sign = 0;
     }
 
-#if defined(IEEE_Arith) || defined(VAX)
+#if defined(IEEE_Arith)
 #   if defined(IEEE_Arith)
     if ((word0(&u) & Exp_mask) == Exp_mask)
 #   else
@@ -3901,10 +3685,6 @@ char * dtoa (double dd, int mode, int ndigits, int *decpt, int *sign, char **rve
 #   endif
         return nrv_alloc("NaN", rve, 3);
     }
-#endif
-
-#if defined(IBM)
-    dval(&u) += 0; /* normalize */
 #endif
 
     if (!dval(&u)) {
@@ -3940,12 +3720,6 @@ char * dtoa (double dd, int mode, int ndigits, int *decpt, int *sign, char **rve
         word0(&d2) &= Frac_mask1;
         word0(&d2) |= Exp_11;
 
-#if defined(IBM)
-        if (j = 11 - hi0bits(word0(&d2) & Frac_mask)) {
-            dval(&d2) /= 1 << j;
-        }
-#endif
-
         /* log(x)   ~=~ log(1.5) + (x-1.5)/1.5
          * log10(x)  =  log(x) / log(10)
          *      ~=~ log(1.5)/log(10) + (x-1.5)/(1.5*log(10))
@@ -3969,10 +3743,6 @@ char * dtoa (double dd, int mode, int ndigits, int *decpt, int *sign, char **rve
          */
 
         i -= Bias;
-#if defined(IBM)
-        i <<= 2;
-        i += j;
-#endif
 #if !defined(Sudden_Underflow)
         denorm = 0;
     }
@@ -4282,11 +4052,7 @@ char * dtoa (double dd, int mode, int ndigits, int *decpt, int *sign, char **rve
 #if !defined(Sudden_Underflow)
             denorm ? be + (Bias + (P-1) - 1 + 1) :
 #endif
-#if defined(IBM)
-            1 + 4*P - 3 - bbits + ((bbits + be - 1) & 3);
-#else
             1 + P - bbits;
-#endif
         b2 += i;
         s2 += i;
         mhi = i2b(1);

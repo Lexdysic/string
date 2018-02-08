@@ -282,10 +282,6 @@ static double private_mem[PRIVATE_mem], *pmem_next = private_mem;
 extern "C" {
 #endif
 
-#if !defined(CONST)
-#   define CONST const
-#endif
-
 #if (defined(IEEE_8087) ^ defined(IEEE_MC68k)) != 1
 #   error Exactly one of IEEE_8087 or IEEE_MC68k should be defined.
 #endif
@@ -1275,7 +1271,7 @@ static double ratio (Bigint *a, Bigint *b) {
 
 
 
-static CONST double tens[] = {
+static const double tens[] = {
     1e0, 1e1, 1e2, 1e3, 1e4, 1e5, 1e6, 1e7, 1e8, 1e9,
     1e10, 1e11, 1e12, 1e13, 1e14, 1e15, 1e16, 1e17, 1e18, 1e19,
     1e20, 1e21, 1e22
@@ -1283,9 +1279,9 @@ static CONST double tens[] = {
 
 
 
- static CONST double
+ static const double
 bigtens[] = { 1e16, 1e32, 1e64, 1e128, 1e256 };
-static CONST double tinytens[] = { 1e-16, 1e-32, 1e-64, 1e-128,
+static const double tinytens[] = { 1e-16, 1e-32, 1e-64, 1e-128,
 #if defined(Avoid_Underflow)
         9007199254740992.0 * 9007199254740992.e-256 /* = 2^106 * 1e-256 */
 #else
@@ -1343,7 +1339,7 @@ static unsigned char hexdig[256] = {
 
 static int match (const char **sp, const char *t) {
     int c, d;
-    CONST char *s = *sp;
+    const char *s = *sp;
 
     while((d = *t++)) {
         if ((c = *++s) >= 'A' && c <= 'Z') {
@@ -1360,7 +1356,7 @@ static int match (const char **sp, const char *t) {
 #   if !defined(No_Hex_NaN)
 static void hexnan (U *rvp, const char **sp) {
     ULong c, x[2];
-    CONST char *s;
+    const char *s;
     int c1, havedig, udx0, xshift;
 
     /**** if (!hexdig['0']) hexdig_init(); ****/
@@ -1369,13 +1365,13 @@ static void hexnan (U *rvp, const char **sp) {
     udx0 = 1;
     s = *sp;
     /* allow optional initial 0x or 0X */
-    while((c = *(CONST unsigned char*)(s+1)) && c <= ' ') {
+    while((c = *(const unsigned char*)(s+1)) && c <= ' ') {
         ++s;
     }
     if (s[1] == '0' && (s[2] == 'x' || s[2] == 'X')) {
         s += 2;
     }
-    while((c = *(CONST unsigned char*)++s)) {
+    while((c = *(const unsigned char*)++s)) {
         if ((c1 = hexdig[c])) {
             c  = c1 & 0xf;
         }
@@ -1540,9 +1536,9 @@ enum {  /* rounding values: same as FLT_ROUNDS */
 };
 
 
-void gethex (CONST char **sp, U *rvp, int rounding, int sign) {
+void gethex (const char **sp, U *rvp, int rounding, int sign) {
     Bigint *b;
-    CONST unsigned char *decpt, *s0, *s, *s1;
+    const unsigned char *decpt, *s0, *s, *s1;
     Long e, e1;
     ULong L, lostbits, *x;
     int big, denorm, esign, havedig, k, n, nbits, up, zret;
@@ -1561,8 +1557,8 @@ void gethex (CONST char **sp, U *rvp, int rounding, int sign) {
     static unsigned char *decimalpoint_cache;
     if (!(s0 = decimalpoint_cache)) {
         s0 = (unsigned char*)localeconv()->decimal_point;
-        if ((decimalpoint_cache = (unsigned char*)MALLOC(strlen((CONST char*)s0) + 1))) {
-            strcpy((char*)decimalpoint_cache, (CONST char*)s0);
+        if ((decimalpoint_cache = (unsigned char*)MALLOC(strlen((const char*)s0) + 1))) {
+            strcpy((char*)decimalpoint_cache, (const char*)s0);
             s0 = decimalpoint_cache;
         }
     }
@@ -1572,7 +1568,7 @@ void gethex (CONST char **sp, U *rvp, int rounding, int sign) {
 
     /**** if (!hexdig['0']) hexdig_init(); ****/
     havedig = 0;
-    s0 = *(CONST unsigned char **)sp + 2;
+    s0 = *(const unsigned char **)sp + 2;
     while(s0[havedig] == '0') {
         havedig++;
     }
@@ -2287,7 +2283,7 @@ odd:
 double strtod (const char *s00, char **se) {
     int bb2, bb5, bbe, bd2, bd5, bbbits, bs2, c, e, e1;
     int esign, i, j, k, nd, nd0, nf, nz, nz0, nz1, sign;
-    CONST char *s, *s0, *s1;
+    const char *s, *s0, *s1;
     double aadj, aadj1;
     Long L;
     U aadj2, adj, rv, rv0;
@@ -2321,7 +2317,7 @@ double strtod (const char *s00, char **se) {
 #endif
 
 #if defined(USE_LOCALE)
-    CONST char *s2;
+    const char *s2;
 #endif
 
     sign = nz0 = nz1 = nz = bc.dplen = bc.uflchk = 0;

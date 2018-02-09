@@ -246,7 +246,7 @@ extern void *MALLOC(size_t);
 #       define PRIVATE_MEM 2304
 #   endif
 #   define PRIVATE_mem ((PRIVATE_MEM + sizeof(double) - 1) / sizeof(double))
-static double private_mem[PRIVATE_mem], *pmem_next = private_mem;
+static double s_privateMemory[PRIVATE_mem], *s_memoryNext = s_privateMemory;
 #endif
 
 #undef Avoid_Underflow
@@ -418,7 +418,7 @@ extern "C" char *dtoa (double d, int mode, int ndigits, int *decpt, int *sign, c
 
 /*=============================================================================
 
-    BigInt
+    Bit Math
 
 =============================================================================*/
 
@@ -560,9 +560,9 @@ static Bigint * BigInt_Alloc (int k) {
         rv = (Bigint *)MALLOC(sizeof(Bigint) + (x-1)*sizeof(ULong));
 #else
         len = (sizeof(Bigint) + (x-1)*sizeof(ULong) + sizeof(double) - 1) / sizeof(double);
-        if (k <= Kmax && pmem_next - private_mem + len <= PRIVATE_mem) {
-            rv = (Bigint*)pmem_next;
-            pmem_next += len;
+        if (k <= Kmax && s_memoryNext - s_privateMemory + len <= PRIVATE_mem) {
+            rv = (Bigint*)s_memoryNext;
+            s_memoryNext += len;
         }
         else {
             rv = (Bigint*)MALLOC(len*sizeof(double));
@@ -1554,12 +1554,12 @@ void ParseHex (const char **sp, U *rvp, int rounding, int sign) {
     const unsigned char *decimalpoint = (unsigned char*)localeconv()->decimal_point;
 #       else
     const unsigned char *decimalpoint;
-    static unsigned char *decimalpoint_cache;
-    if (!(s0 = decimalpoint_cache)) {
+    static unsigned char *s_decimalpoint_cache;
+    if (!(s0 = s_decimalpoint_cache)) {
         s0 = (unsigned char*)localeconv()->decimal_point;
-        if ((decimalpoint_cache = (unsigned char*)MALLOC(strlen((const char*)s0) + 1))) {
-            strcpy((char*)decimalpoint_cache, (const char*)s0);
-            s0 = decimalpoint_cache;
+        if ((s_decimalpoint_cache = (unsigned char*)MALLOC(strlen((const char*)s0) + 1))) {
+            strcpy((char*)s_decimalpoint_cache, (const char*)s0);
+            s0 = s_decimalpoint_cache;
         }
     }
     decimalpoint = s0;
@@ -3437,7 +3437,7 @@ double strtod (const char *s00, char **se) {
 }
 
 #if !defined(MULTIPLE_THREADS)
- static char *dtoa_result;
+static char *s_dtoaResult;
 #endif
 
 /*===========================================================================*/
@@ -3452,7 +3452,7 @@ static char * rv_alloc (int i) {
     *r = k;
     return
 #if !defined(MULTIPLE_THREADS)
-    dtoa_result =
+    s_dtoaResult =
 #endif
         (char *)(r+1);
 }
@@ -3482,8 +3482,8 @@ void freedtoa (char *s) {
     b->maxwds = 1 << (b->k = *(int*)b);
     BigInt_Free(b);
 #if !defined(MULTIPLE_THREADS)
-    if (s == dtoa_result) {
-        dtoa_result = 0;
+    if (s == s_dtoaResult) {
+        s_dtoaResult = 0;
     }
 #endif
 }
@@ -3596,9 +3596,9 @@ char * dtoa (double dd, int mode, int ndigits, int *decpt, int *sign, char **rve
 #endif
 
 #if !defined(MULTIPLE_THREADS)
-    if (dtoa_result) {
-        freedtoa(dtoa_result);
-        dtoa_result = 0;
+    if (s_dtoaResult) {
+        freedtoa(s_dtoaResult);
+        s_dtoaResult = 0;
     }
 #endif
 

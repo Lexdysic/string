@@ -2276,7 +2276,7 @@ odd:
 #endif /* NO_STRTOD_BIGCOMP */
 
 /*===========================================================================*/
-double strtod (const char *s00, char **se) {
+double strtodEx (const char *s00, char *term, char **se) {
     int bb2, bb5, bbe, bd2, bd5, bbbits, bs2, c, e, e1;
     int esign, i, j, k, nd, nd0, nf, nz, nz0, nz1, sign;
     const char *s, *s0, *s1;
@@ -2317,14 +2317,15 @@ double strtod (const char *s00, char **se) {
 #endif
 
     sign = nz0 = nz1 = nz = bc.dplen = bc.uflchk = 0;
+    s = s00;
     dval(&rv) = 0.;
-    for (s = s00;;s++) {
-        switch (*s) {
+    while (s < term) {
+        switch (*s++) {
         case '-':
             sign = 1;
             /* no break */
         case '+':
-            if (*++s) {
+            if (*s) {
                 goto break2;
             }
             /* no break */
@@ -2345,34 +2346,37 @@ double strtod (const char *s00, char **se) {
  break2:
     if (*s == '0') {
 #if !defined(NO_HEX_FP)
-        switch (s[1]) {
-        case 'x':
-        case 'X':
+        if (s + 1 < term) {
+            switch (s[1]) {
+            case 'x':
+            case 'X':
 #   if defined(Honor_FLT_ROUNDS)
-            ParseHex(&s, &rv, bc.rounding, sign);
+                ParseHex(&s, &rv, bc.rounding, sign);
 #   else
-            ParseHex(&s, &rv, 1, sign);
+                ParseHex(&s, &rv, 1, sign);
 #   endif
-            goto ret;
+                goto ret;
+            }
         }
-#endif /*}*/
+#endif
+
         nz0 = 1;
-        while (*++s == '0') {
+        while (s < term && *s++ == '0') {
         }
 
-        if (!*s) {
+        if (s >= term || !*s) {
             goto ret;
         }
     }
 
     s0 = s;
     y = z = 0;
-    for (nd = nf = 0; (c = *s) >= '0' && c <= '9'; nd++, s++) {
+    for (nd = nf = 0; s < term && (c = *s) >= '0' && c <= '9'; nd++, s++) {
         if (nd < 9) {
-            y = 10*y + c - '0';
+            y = 10 * y + c - '0';
         }
         else if (nd < DBL_DIG + 2) {
-            z = 10*z + c - '0';
+            z = 10 * z + c - '0';
         }
     }
 
@@ -2384,17 +2388,16 @@ double strtod (const char *s00, char **se) {
 
 #if defined(USE_LOCALE)
     s1 = localeconv()->decimal_point;
-    if (c == *s1) {
+    if (c == *s1++) {
         c = '.';
-        if (*++s1) {
-            s2 = s;
-            for(;;) {
-                if (*++s2 != *s1) {
-                    c = 0;
+        if (*s1) {
+            for (s2 = s; s < term && *s1; ++s, ++s1) {
+                if (!*s1) {
+                    s = s2;
                     break;
                 }
-                if (!*++s1) {
-                    s = s2;
+                if (*s2 != *s1) {
+                    c = 0;
                     break;
                 }
             }
@@ -2402,12 +2405,12 @@ double strtod (const char *s00, char **se) {
     }
 #endif
 
-    if (c == '.') {
-        c = *++s;
+    if (c == '.' && s < term) {
+        c = *s++;
         bc.dp1 = s - s0;
         bc.dplen = bc.dp1 - bc.dp0;
         if (!nd) {
-            for(; c == '0'; c = *++s) {
+            for (; s < term && c == '0'; c = *s++) {
                 nz++;
             }
             if (c > '0' && c <= '9') {
@@ -2421,7 +2424,7 @@ double strtod (const char *s00, char **se) {
             goto dig_done;
         }
 
-        for (; c >= '0' && c <= '9'; c = *++s) {
+        for (; s < term && c >= '0' && c <= '9'; c = *s++) {
  have_dig:
             nz++;
             if (c -= '0') {
@@ -2436,10 +2439,10 @@ double strtod (const char *s00, char **se) {
                 }
 
                 if (nd++ < 9) {
-                    y = 10*y + c;
+                    y = 10 * y + c;
                 }
                 else if (nd <= DBL_DIG + 2) {
-                    z = 10*z + c;
+                    z = 10 * z + c;
                 }
                 nz = nz1 = 0;
             }
@@ -2454,11 +2457,14 @@ double strtod (const char *s00, char **se) {
         }
         s00 = s;
         esign = 0;
-        switch(c = *++s) {
-        case '-':
-            esign = 1;
-        case '+':
-            c = *++s;
+
+        if (s < term) {
+            switch(c = *s++) {
+            case '-':
+                esign = 1;
+            case '+':
+                c = *s;
+            }
         }
 
         if (c >= '0' && c <= '9') {
